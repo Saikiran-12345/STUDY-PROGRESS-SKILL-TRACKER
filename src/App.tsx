@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react-router-dom';
 
 import DashboardPage from './pages/DashboardPage';
@@ -67,6 +67,51 @@ const Sidebar = () => (
 );
 
 const App = () => {
+  // Pre-seed localStorage with realistic data on first mount
+  useEffect(() => {
+    const seed = (key: string, data: any) => {
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, JSON.stringify(data));
+      }
+    };
+
+    seed('study_subjects', [
+      { id: '1', name: 'Mathematics', category: 'STEM', difficulty: 'Hard' },
+      { id: '2', name: 'Computer Science', category: 'STEM', difficulty: 'Medium' },
+      { id: '3', name: 'World History', category: 'Humanities', difficulty: 'Easy' }
+    ]);
+
+    seed('study_topics', [
+      { id: '1', subjectId: '2', title: 'React Hooks & State Management', status: 'Studying' },
+      { id: '2', subjectId: '1', title: 'Linear Algebra Matrices', status: 'Pending' },
+      { id: '3', subjectId: '3', title: 'The French Revolution', status: 'Completed' }
+    ]);
+
+    seed('study_studytasks', [
+      { id: '1', title: 'Complete coding assignment', subjectId: '2', dueDate: '2026-09-05', priority: 'High', isCompleted: false },
+      { id: '2', title: 'Revise math worksheets', subjectId: '1', dueDate: '2026-09-02', priority: 'Medium', isCompleted: true },
+      { id: '3', title: 'Read history essay page 4', subjectId: '3', dueDate: '2026-09-10', priority: 'Low', isCompleted: false }
+    ]);
+
+    seed('study_skills', [
+      { name: 'TypeScript Programming', level: 4, category: 'STEM' },
+      { name: 'Data Structures', level: 3, category: 'STEM' },
+      { name: 'Academic Writing', level: 5, category: 'Humanities' }
+    ]);
+
+    seed('study_notes', [
+      { id: '1', title: 'Vite Config Options', content: 'Configure path aliases using @/ resolving to src/ folder to solve compiler errors.', tags: ['Vite', 'TypeScript'] },
+      { id: '2', title: 'Linear Systems formulas', content: 'Determinant of a 2x2 matrix: ad - bc. If 0, matrix has no inverse.', tags: ['Math'] }
+    ]);
+
+    seed('study_profile', {
+      name: 'Saikiran Patel',
+      educationLevel: 'Undergraduate Computer Science',
+      learningPreferences: ['Visual Learning', 'Hands-on Coding'],
+      goals: ['Master Full Stack Dev', 'Maintain a 5-day study streak']
+    });
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-slate-950 text-slate-200">

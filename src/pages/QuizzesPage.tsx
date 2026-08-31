@@ -1,426 +1,151 @@
-import React, { useReducer } from 'react';
-import { useQuizzes } from '@/hooks/useQuizzes';
+import React, { useState } from 'react';
+
+const quizDatabase = [
+  {
+    category: 'STEM',
+    title: 'Vite & Frontend Tooling',
+    questions: [
+      {
+        question: 'Which plugin is used to support React in Vite by default?',
+        options: ['@vitejs/plugin-react', '@vue/plugin-react', 'vite-plugin-node', 'esbuild-react-plugin'],
+        answer: 0
+      },
+      {
+        question: 'Which tool does Vite use for fast production bundling under the hood?',
+        options: ['Webpack', 'Rollup', 'Turbopack', 'Parcel'],
+        answer: 1
+      }
+    ]
+  },
+  {
+    category: 'STEM',
+    title: 'Linear Algebra Matrices',
+    questions: [
+      {
+        question: 'What is the determinant of a 2x2 identity matrix?',
+        options: ['0', '-1', '1', 'Undefined'],
+        answer: 2
+      },
+      {
+        question: 'If det(A) = 0, what is true about matrix A?',
+        options: ['It is invertible', 'It is non-singular', 'It is a square matrix', 'It has no inverse (singular)'],
+        answer: 3
+      }
+    ]
+  }
+];
 
 export const QuizzesPage: React.FC = () => {
-  const { data, loading, save } = useQuizzes();
-  
+  const [activeQuiz, setActiveQuiz] = useState<any>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [showResults, setShowResults] = useState(false);
+
+  const startQuiz = (quiz: any) => {
+    setActiveQuiz(quiz);
+    setCurrentQuestionIndex(0);
+    setSelectedOption(null);
+    setScore(0);
+    setShowResults(false);
+  };
+
+  const handleNext = () => {
+    if (selectedOption === activeQuiz.questions[currentQuestionIndex].answer) {
+      setScore(s => s + 1);
+    }
+    
+    if (currentQuestionIndex + 1 < activeQuiz.questions.length) {
+      setCurrentQuestionIndex(i => i + 1);
+      setSelectedOption(null);
+    } else {
+      setShowResults(true);
+    }
+  };
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-        <div>
-          <h1 className="text-3xl font-black text-white">Quizzes Module</h1>
-          <p className="text-slate-400 text-sm">Organize and monitor your progress in real-time.</p>
-        </div>
-        <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold rounded-full uppercase tracking-wider">
-          Active Status
-        </span>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-3xl font-black text-white">Practice Quizzes</h1>
+        <p className="text-slate-400 text-sm">Challenge yourself with questions derived from your subjects.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
-          <h2 className="text-lg font-bold text-white mb-4">Focus Details</h2>
-          <div className="h-64 flex flex-col items-center justify-center bg-slate-950 rounded-xl border border-slate-800/50">
-            <p className="text-slate-500 text-sm">Interactive details dashboard loading...</p>
-          </div>
+      {!activeQuiz && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {quizDatabase.map((quiz, idx) => (
+            <div key={idx} className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-between">
+              <div>
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{quiz.category}</span>
+                <h2 className="text-xl font-bold text-white mt-1">{quiz.title}</h2>
+                <p className="text-slate-400 text-sm mt-2">{quiz.questions.length} multiple choice questions.</p>
+              </div>
+              <button 
+                onClick={() => startQuiz(quiz)}
+                className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all"
+              >
+                START PRACTICE RUN
+              </button>
+            </div>
+          ))}
         </div>
+      )}
 
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <h2 className="text-lg font-bold text-white">System Actions</h2>
+      {activeQuiz && !showResults && (
+        <div className="max-w-2xl mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-6">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+            <span className="text-xs text-slate-500 font-bold uppercase">{activeQuiz.title}</span>
+            <span className="text-xs text-slate-500">Question {currentQuestionIndex + 1} of {activeQuiz.questions.length}</span>
+          </div>
+
+          <h2 className="text-lg font-bold text-white">{activeQuiz.questions[currentQuestionIndex].question}</h2>
+
+          <div className="space-y-3">
+            {activeQuiz.questions[currentQuestionIndex].options.map((opt: string, i: number) => (
+              <div 
+                key={i}
+                onClick={() => setSelectedOption(i)}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedOption === i ? 'bg-blue-600/10 border-blue-500 text-blue-400' : 'bg-slate-950 border-slate-800 hover:bg-slate-900 text-slate-300'}`}
+              >
+                {opt}
+              </div>
+            ))}
+          </div>
+
           <button 
-            onClick={() => save({ updated: true, timestamp: Date.now() })}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+            onClick={handleNext}
+            disabled={selectedOption === null}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all disabled:opacity-50"
           >
-            SYNC WORKSPACE
+            {currentQuestionIndex + 1 < activeQuiz.questions.length ? 'NEXT QUESTION' : 'SUBMIT ANSWERS'}
           </button>
         </div>
-      </div>
+      )}
+
+      {activeQuiz && showResults && (
+        <div className="max-w-md mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-6">
+          <h2 className="text-3xl font-black text-white">Quiz Finished!</h2>
+          <div className="p-8 bg-slate-950 rounded-2xl border border-slate-800">
+            <p className="text-slate-500 text-xs uppercase font-black mb-2">Final Score</p>
+            <p className="text-5xl font-black text-blue-400">{score} / {activeQuiz.questions.length}</p>
+          </div>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => startQuiz(activeQuiz)}
+              className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
+            >
+              Retry
+            </button>
+            <button 
+              onClick={() => setActiveQuiz(null)}
+              className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all"
+            >
+              Back to List
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default QuizzesPage;
-
-export const QuizzesSubCard0: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 0}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard1: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 10}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard2: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 20}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard3: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 30}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard4: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 40}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard5: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 50}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard6: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 60}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard7: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 70}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard8: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 80}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard9: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 90}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard10: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 100}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard11: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 110}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard12: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 120}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard13: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 130}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard14: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 140}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard15: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 150}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard16: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 160}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard17: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 170}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard18: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 180}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard19: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 190}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard20: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 200}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard21: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 210}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard22: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 220}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard23: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 230}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard24: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 240}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard25: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 250}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard26: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 260}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard27: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 270}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard28: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 280}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard29: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 290}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard30: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 300}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard31: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 310}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard32: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 320}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard33: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 330}
-      </span>
-    </div>
-  );
-};
-
-export const QuizzesSubCard34: React.FC<{ title: string; score?: number }> = (props) => {
-  return (
-    <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 flex justify-between items-center">
-      <span className="text-xs font-bold text-slate-400">{props.title}</span>
-      <span className="text-xs font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
-        {props.score || 340}
-      </span>
-    </div>
-  );
-};
