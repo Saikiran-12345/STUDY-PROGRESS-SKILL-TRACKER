@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { LayoutDashboard, User, BookOpen, Library, Map as MapIcon, ListTodo, Calendar, Brain, Award, Target, FileText, Flame, BarChart2, ClipboardList, Settings } from 'lucide-react';
 import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react-router-dom';
 
 import DashboardPage from './pages/DashboardPage';
@@ -16,6 +17,23 @@ import StreaksPage from './pages/StreaksPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
+
+const MODULE_ICONS: Record<string, React.FC<any>> = {
+  Profile: User,
+  Subjects: BookOpen,
+  Topics: Library,
+  LearningPlans: MapIcon,
+  StudyTasks: ListTodo,
+  Calendar: Calendar,
+  Quizzes: Brain,
+  Skills: Award,
+  Goals: Target,
+  Notes: FileText,
+  Streaks: Flame,
+  Analytics: BarChart2,
+  Reports: ClipboardList,
+  Settings: Settings
+};
 
 const Sidebar = () => (
   <div className="w-72 bg-slate-950 border-r border-slate-900 h-screen fixed top-0 left-0 overflow-y-auto flex flex-col z-50">
@@ -37,9 +55,10 @@ const Sidebar = () => (
         <NavLink 
           to="/dashboard" 
           className={({ isActive }) => 
-            `flex items-center px-4 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${isActive ? 'bg-white text-black' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`
+            `flex items-center px-4 py-3 text-sm font-bold rounded-lg transition-all duration-200 ${isActive ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`
           }
         >
+          <LayoutDashboard className="w-5 h-5 mr-3 opacity-80" />
           Dashboard
         </NavLink>
       </div>
@@ -50,22 +69,25 @@ const Sidebar = () => (
           'Profile', 'Subjects', 'Topics', 'LearningPlans', 'StudyTasks',
           'Calendar', 'Quizzes', 'Skills', 'Goals', 'Notes',
           'Streaks', 'Analytics', 'Reports', 'Settings'
-        ].map(mod => (
-          <NavLink 
-            key={mod}
-            to={`/${mod.toLowerCase()}`} 
-            className={({ isActive }) => 
-              `flex items-center px-4 py-2.5 my-1 text-sm font-semibold rounded-lg transition-all duration-200 ${isActive ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-slate-400 border border-transparent hover:bg-slate-900 hover:text-slate-200'}`
-            }
-          >
-            {mod}
-          </NavLink>
-        ))}
+        ].map(mod => {
+          const IconComponent = MODULE_ICONS[mod];
+          return (
+            <NavLink 
+              key={mod}
+              to={`/${mod.toLowerCase()}`} 
+              className={({ isActive }) => 
+                `flex items-center px-4 py-2.5 my-1 text-sm font-semibold rounded-lg transition-all duration-200 group ${isActive ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-slate-400 border border-transparent hover:bg-slate-900 hover:text-slate-200'}`
+              }
+            >
+              {IconComponent && <IconComponent className="w-4 h-4 mr-3 opacity-70 group-hover:opacity-100 transition-opacity" />}
+              {mod.replace(/([A-Z])/g, ' $1').trim()}
+            </NavLink>
+          );
+        })}
       </div>
     </div>
   </div>
 );
-
 const App = () => {
   // Pre-seed localStorage with realistic data on first mount
   useEffect(() => {
