@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 
 export const ProfilePage: React.FC = () => {
   const { data, loading, save } = useProfile();
   
+  const [name, setName] = useState('Student');
+  const [email, setEmail] = useState('student@example.com');
+  const [bio, setBio] = useState('Self-taught developer focusing on React and TypeScript.');
+  const [studyGoal, setStudyGoal] = useState('5 hours/week');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('studytracker_profile_data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if(parsed.name) setName(parsed.name);
+      if(parsed.email) setEmail(parsed.email);
+      if(parsed.bio) setBio(parsed.bio);
+      if(parsed.studyGoal) setStudyGoal(parsed.studyGoal);
+    }
+  }, []);
+
+  const handleSaveProfile = () => {
+    localStorage.setItem('studytracker_profile_data', JSON.stringify({ name, email, bio, studyGoal }));
+    save({ updated: true, timestamp: Date.now() });
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
       <div className="flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
-          <h1 className="text-3xl font-black text-white">Profile Module</h1>
-          <p className="text-slate-400 text-sm">Organize and monitor your progress in real-time.</p>
+          <h1 className="text-3xl font-black text-white">Student Profile</h1>
+          <p className="text-slate-400 text-sm">Manage your personal details and learning goals.</p>
         </div>
         <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold rounded-full uppercase tracking-wider">
           Active Status
@@ -17,14 +38,84 @@ export const ProfilePage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
-          <h2 className="text-lg font-bold text-white mb-4">Focus Details</h2>
-          <div className="h-64 flex flex-col items-center justify-center bg-slate-950 rounded-xl border border-slate-800/50">
-            <p className="text-slate-500 text-sm">Interactive details dashboard loading...</p>
+        <div className="md:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+          <h2 className="text-lg font-bold text-white mb-2">Personal Information</h2>
+          
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-3xl font-black text-white shadow-lg border-4 border-slate-800">
+                {name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-xl">{name}</h3>
+                <p className="text-slate-400 text-sm">{email}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={e => setName(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Target Study Goal</label>
+              <select 
+                value={studyGoal} 
+                onChange={e => setStudyGoal(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 transition-colors"
+              >
+                <option>2 hours/week</option>
+                <option>5 hours/week</option>
+                <option>10 hours/week</option>
+                <option>20+ hours/week (Intensive)</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Short Bio</label>
+              <textarea 
+                rows={3}
+                value={bio} 
+                onChange={e => setBio(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 transition-colors resize-none"
+              />
+            </div>
+            
+            <button 
+              onClick={(e) => {
+                handleSaveProfile();
+                const btn = e.currentTarget;
+                btn.innerText = '✅ PROFILE UPDATED';
+                btn.classList.replace('bg-blue-600', 'bg-green-600');
+                setTimeout(() => {
+                  btn.innerText = 'SAVE PROFILE CHANGES';
+                  btn.classList.replace('bg-green-600', 'bg-blue-600');
+                }, 2000);
+              }}
+              className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg"
+            >
+              SAVE PROFILE CHANGES
+            </button>
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4 h-fit">
           <h2 className="text-lg font-bold text-white">System Actions</h2>
           <button 
             onClick={(e) => {
