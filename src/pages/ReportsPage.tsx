@@ -27,7 +27,16 @@ export const ReportsPage: React.FC = () => {
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
           <h2 className="text-lg font-bold text-white">System Actions</h2>
           <button 
-            onClick={() => save({ updated: true, timestamp: Date.now() })}
+            onClick={(e) => {
+              save({ updated: true, timestamp: Date.now() });
+              const btn = e.currentTarget;
+              btn.innerText = '✅ SYNCED SUCCESSFULLY!';
+              btn.classList.replace('bg-blue-600', 'bg-green-600');
+              setTimeout(() => {
+                btn.innerText = 'SYNC WORKSPACE';
+                btn.classList.replace('bg-green-600', 'bg-blue-600');
+              }, 2000);
+            }}
             className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)]"
           >
             SYNC WORKSPACE
